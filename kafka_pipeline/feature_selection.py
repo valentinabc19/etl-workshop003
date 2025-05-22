@@ -3,12 +3,13 @@ import os
 from sklearn.model_selection import train_test_split
 from typing import Tuple
 
-ROOT_DIR = os.path.abspath(os.path.join(__file__, "../"))
+ROOT_DIR = os.path.abspath(os.path.join(__file__, "../../"))
 
 def load_and_clean_yearly_data(file_path: str, year: int, drop_cols: list, rename_dict: dict) -> pd.DataFrame:
     df = pd.read_csv(file_path)
+    df.columns = df.columns.str.lower()
     df = df.drop(columns=drop_cols)
-    df = df.rename(columns=rename_dict).copy()
+    df = df.rename(columns= rename_dict)
     df["year"] = year
     return df
 
@@ -102,7 +103,7 @@ def prepare_test_set(test_size: float = 0.2,
     df = preliminar_eda_and_merge()
     df = data_transformations(df)
 
-    X = df.drop(['happiness_score', 'region', 'perceptions_of_corruption', 'generosity', 'year'], axis=1)
+    X = df.drop(['happiness_score', 'perceptions_of_corruption', 'generosity', 'year'], axis=1)
     y = df['happiness_score']
 
     _, X_test, _, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)

@@ -25,7 +25,8 @@ def run_producer(X_test: pd.DataFrame, y_test: pd.Series):
         message = row.to_dict()
         message['true_score'] = y_test.loc[index]
         producer.send(topic, message)
-        time.sleep(0.5)  # Simula streaming
+        time.sleep(0.1)  # Simula streaming
+        print("message sent")
 
     producer.flush()
     producer.close()

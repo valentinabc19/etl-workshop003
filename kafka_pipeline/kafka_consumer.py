@@ -4,9 +4,8 @@ import os
 import pandas as pd
 import psycopg2
 import joblib
-from sklearn.metrics import r2_score
 
-ROOT_DIR = os.path.abspath(os.path.join(__file__, "../"))
+ROOT_DIR = os.path.abspath(os.path.join(__file__, "../../"))
 CREDENTIALS_PATH = os.path.join(ROOT_DIR, "credentials.json")   
 # Conexión a PostgreSQL
 def connect_postgres():
@@ -55,14 +54,12 @@ def run_consumer():
         true_values.append(y_true)
         predicted_values.append(y_pred)
 
-        r2 = r2_score(true_values, predicted_values)
+        save_to_postgres(data, y_true, y_pred)
 
-        save_to_postgres(data, y_true, y_pred, r2)
-
-        print(f"Guardado en BD - R² acumulado: {r2:.4f}")
+        print(f"Guardado en BD - Prediccion: {y_pred}")
 
 # Guardado en PostgreSQL con columnas individuales
-def save_to_postgres(features_dict, y_true, y_pred, r2_value):
+def save_to_postgres(features_dict, y_true, y_pred):
     conn = connect_postgres()
     cursor = conn.cursor()
 
@@ -76,25 +73,23 @@ def save_to_postgres(features_dict, y_true, y_pred, r2_value):
         healthy_life_expectancy REAL,
         freedom REAL,
         y_true REAL,
-        y_pred REAL,
-        r2 REAL
+        y_pred REAL
     );
     """)
 
     cursor.execute("""
         INSERT INTO predictions (
             country, gdp_per_capita, social_support,
-            healthy_life_expectancy, freedom, y_true, y_pred, r2
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            healthy_life_expectancy, freedom, y_true, y_pred
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s)
     """, (
-        features_dict.get('country'),
-        features_dict.get('gdp_per_capita'),
-        features_dict.get('social_support'),
-        features_dict.get('healthy_life_expectancy'),
-        features_dict.get('freedom'),
-        y_true,
-        y_pred,
-        r2_value
+        str(features_dict.get('country')),
+        float(features_dict.get('gdp_per_capita')),
+        float(features_dict.get('social_support')),
+        float(features_dict.get('healthy_life_expectancy')),
+        float(features_dict.get('freedom')),
+        float(y_true),
+        float(y_pred)
     ))
 
     conn.commit()
