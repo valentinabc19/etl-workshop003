@@ -5,14 +5,14 @@ import time
 
 def run_producer(X_test: pd.DataFrame, y_test: pd.Series):
     """
-    Envía datos de test (features y valor real) a un tópico de Kafka.
+    Sends test data (features and actual values) to a Kafka topic.
 
-    Parámetros
-    ----------
-    X_test : pd.DataFrame
-        Conjunto de features a usar para predicción.
-    y_test : pd.Series
-        Valores reales correspondientes a X_test.
+        Parameters
+        ----------
+        X_test : pd.DataFrame
+            Feature set to be used for prediction.
+        y_test : pd.Series
+            Actual values corresponding to X_test.
     """
     producer = KafkaProducer(
         bootstrap_servers='localhost:9092',
@@ -25,7 +25,7 @@ def run_producer(X_test: pd.DataFrame, y_test: pd.Series):
         message = row.to_dict()
         message['true_score'] = y_test.loc[index]
         producer.send(topic, message)
-        time.sleep(0.1)  # Simula streaming
+        time.sleep(0.1)
         print("message sent")
 
     producer.flush()

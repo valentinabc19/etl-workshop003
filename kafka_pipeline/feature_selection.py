@@ -14,17 +14,18 @@ def load_and_clean_yearly_data(file_path: str, year: int, drop_cols: list, renam
     return df
 
 def preliminar_eda_and_merge(data_dir: str = "data") -> pd.DataFrame:
-    """Carga, limpia y combina los datasets de felicidad de 2015 a 2019.
+    """
+    Load, clean, and combine the happiness datasets from 2015 to 2019.
 
-    Parameters
-    ----------
-    data_dir : str
-        Directorio que contiene los archivos CSV.
+        Parameters
+        ----------
+        data_dir : str
+            Directory containing the CSV files.
 
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame combinado y preprocesado.
+        Returns
+        -------
+        pd.DataFrame
+            Combined and preprocessed DataFrame.
     """
     rename_dict = {
         "country or region": "country",
@@ -63,6 +64,19 @@ def preliminar_eda_and_merge(data_dir: str = "data") -> pd.DataFrame:
     return df
 
 def data_transformations(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Perform various transformations on the input DataFrame to standardize and clean country and region data, and handle missing values.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Input DataFrame containing country, region, and happiness-related columns.
+
+        Returns
+        -------
+        pd.DataFrame
+            Transformed DataFrame with standardized country names, assigned regions, filled missing corruption perceptions, and dropped rows with any remaining NaN values.
+    """
 
     df["country"] = df["country"].str.lower()
 
@@ -272,23 +286,23 @@ def data_transformations(df: pd.DataFrame) -> pd.DataFrame:
 def prepare_test_set(test_size: float = 0.2,
                      random_state: int = 42) -> Tuple[pd.DataFrame, pd.Series]:
     """
-    Separa y retorna únicamente el conjunto de prueba (X_test, y_test) a partir del dataframe dado.
-    Útil para casos en los que el conjunto de entrenamiento será procesado por otro sistema (e.g. Kafka).
+    Splits and returns only the test set (X_test, y_test) from the given DataFrame.
+    Useful for cases where the training set will be processed by another system (e.g., Kafka).
 
-    Parámetros
-    ----------
+        Parameters
+        ----------
 
-    test_size : float, optional
-        Proporción del conjunto de datos usado como test (por defecto 0.2).
+        test_size : float, optional
+            Proportion of the dataset to be used as the test set (default is 0.2).
 
-    random_state : int, optional
-        Semilla aleatoria para reproducibilidad.
+        random_state : int, optional
+            Random seed for reproducibility.
 
-    Retorna
-    -------
-    X_test : pd.DataFrame
-    y_test : pd.Series
-    """
+        Returns
+        -------
+        X_test : pd.DataFrame
+        y_test : pd.Series
+        """
     df = preliminar_eda_and_merge()
     df = data_transformations(df)
 

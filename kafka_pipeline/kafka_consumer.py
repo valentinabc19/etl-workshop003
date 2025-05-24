@@ -8,6 +8,22 @@ import joblib
 ROOT_DIR = os.path.abspath(os.path.join(__file__, "../../"))
 CREDENTIALS_PATH = os.path.join(ROOT_DIR, "credentials.json")  
 def connect_postgres():
+    """Establish a connection to a PostgreSQL database using credentials from a JSON file.
+
+        Returns
+        -------
+        psycopg2.connection
+            A connection object to the PostgreSQL database.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the credentials file is not found at the specified path.
+        KeyError
+            If required credentials (db_host, db_name, db_user, db_password) are missing in the JSON file.
+        psycopg2.Error
+            If the connection to the PostgreSQL database fails.
+    """
     with open (CREDENTIALS_PATH, "r", encoding="utf-8") as file:
         credentials = json.load(file)
         
@@ -26,6 +42,24 @@ def connect_postgres():
     return conn
 
 def run_consumer():
+    """
+    Run a Kafka consumer to process messages from the 'ml-features' topic, make predictions using a pre-trained model,
+    and save the results to a PostgreSQL database.
+
+    The function loads a pre-trained model, consumes messages containing feature data and true happiness scores,
+    predicts happiness scores, and stores both true and predicted values in a database.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        FileNotFoundError
+            If the trained model file is not found at the specified path.
+        KafkaError
+            If there is an error connecting to or consuming from the Kafka topic.
+    """
     consumer = KafkaConsumer(
         'ml-features',
         bootstrap_servers='localhost:9092',
@@ -46,7 +80,6 @@ def run_consumer():
 
         y_true = data.pop('true_score')
 
-        # Convertir en DataFrame para predicción
         X_input = pd.DataFrame([data])
         y_pred = model.predict(X_input)[0]
 
@@ -57,12 +90,32 @@ def run_consumer():
 
         print(f"Guardado en BD - Prediccion: {y_pred}")
 
-# Guardado en PostgreSQL con columnas individuales
 def save_to_postgres(features_dict, y_true, y_pred):
+    """
+    Save prediction results along with features to a PostgreSQL database.
+
+        Parameters
+        ----------
+        features_dict : dict
+            Dictionary containing the feature values (region, gdp_per_capita, social_support, healthy_life_expectancy, freedom).
+        y_true : float
+            The actual happiness score.
+        y_pred : float
+            The predicted happiness score.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        psycopg2.Error
+            If there is an error executing the SQL commands or connecting to the database.
+    """
     conn = connect_postgres()
     cursor = conn.cursor()
 
-    # Crear tabla si no existe (ajustada con columnas específicas)
+    
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS predictions (
         id SERIAL PRIMARY KEY,
