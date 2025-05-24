@@ -6,8 +6,7 @@ import psycopg2
 import joblib
 
 ROOT_DIR = os.path.abspath(os.path.join(__file__, "../../"))
-CREDENTIALS_PATH = os.path.join(ROOT_DIR, "credentials.json")   
-# Conexión a PostgreSQL
+CREDENTIALS_PATH = os.path.join(ROOT_DIR, "credentials.json")  
 def connect_postgres():
     with open (CREDENTIALS_PATH, "r", encoding="utf-8") as file:
         credentials = json.load(file)
@@ -67,7 +66,7 @@ def save_to_postgres(features_dict, y_true, y_pred):
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS predictions (
         id SERIAL PRIMARY KEY,
-        country TEXT,
+        region TEXT,
         gdp_per_capita REAL,
         social_support REAL,
         healthy_life_expectancy REAL,
@@ -79,11 +78,11 @@ def save_to_postgres(features_dict, y_true, y_pred):
 
     cursor.execute("""
         INSERT INTO predictions (
-            country, gdp_per_capita, social_support,
+            region, gdp_per_capita, social_support,
             healthy_life_expectancy, freedom, y_true, y_pred
         ) VALUES (%s, %s, %s, %s, %s, %s, %s)
     """, (
-        str(features_dict.get('country')),
+        str(features_dict.get('region')),
         float(features_dict.get('gdp_per_capita')),
         float(features_dict.get('social_support')),
         float(features_dict.get('healthy_life_expectancy')),
